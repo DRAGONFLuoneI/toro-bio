@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ToRo - Bio</title>
-    <link rel="shortcut icon" href="./media/img/icon_index.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
@@ -13,12 +12,79 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            cursor: none !important; /* Убираем стандартный курсор */
         }
 
         body {
             font-family: 'Dela Gothic One', cursive;
             overflow: hidden;
             background: #000;
+        }
+
+        /* Кастомный курсор - православный крест */
+        .custom-cursor {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+        }
+
+        .orthodox-cross {
+            width: 30px;
+            height: 40px;
+            position: relative;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Вертикальная линия */
+        .orthodox-cross::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 100%;
+            background: #000;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Верхняя горизонтальная линия */
+        .orthodox-cross::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 8px;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 3px;
+            background: #000;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Средняя горизонтальная линия */
+        .cross-middle {
+            position: absolute;
+            left: 50%;
+            top: 18px;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: #000;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Нижняя диагональная линия */
+        .cross-bottom {
+            position: absolute;
+            left: 50%;
+            bottom: 6px;
+            transform: translateX(-50%) rotate(-20deg);
+            width: 20px;
+            height: 3px;
+            background: #000;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
         }
 
         /* Экран входа с размытием */
@@ -35,7 +101,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             transition: opacity 0.8s ease, backdrop-filter 0.8s ease;
         }
 
@@ -232,7 +297,6 @@
         /* Иконка глобуса - с hover и кликом */
         .globe-link {
             display: inline-block;
-            cursor: pointer;
             text-decoration: none;
             margin-bottom: 15px;
             opacity: 0;
@@ -281,7 +345,6 @@
             height: 40px;
             background: none;
             border: none;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -338,7 +401,6 @@
             background: rgba(255, 255, 255, 0.25);
             border-radius: 1.5px;
             overflow: visible;
-            cursor: pointer;
             position: relative;
         }
 
@@ -403,6 +465,14 @@
     </style>
 </head>
 <body>
+    <!-- Кастомный курсор - православный крест -->
+    <div class="custom-cursor">
+        <div class="orthodox-cross">
+            <div class="cross-middle"></div>
+            <div class="cross-bottom"></div>
+        </div>
+    </div>
+
     <!-- Экран входа с размытием -->
     <div class="entrance-screen" id="entranceScreen">
         <div class="entrance-text">Click anywhere on the screen</div>
@@ -436,7 +506,7 @@
         <div class="location">Russia</div>
 
         <!-- Иконка глобуса с ссылкой -->
-        <a href="https://steamcommunity.com/profiles/76561199388669143/" target="_blank" class="globe-link">
+        <a href="https://your-website.com" target="_blank" class="globe-link">
             <svg class="globe-icon" viewBox="0 0 24 24">
                 <defs>
                     <mask id="globe-mask">
@@ -473,6 +543,14 @@
     <audio id="audio" src="./media/audio/iebanytiu.mp3"></audio>
 
     <script>
+        // Кастомный курсор
+        const cursor = document.querySelector('.custom-cursor');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
         // Элементы
         const audio = document.getElementById('audio');
         const playBtn = document.getElementById('playBtn');
@@ -482,21 +560,18 @@
         const durationEl = document.getElementById('duration');
         const entranceScreen = document.getElementById('entranceScreen');
 
-        audio.volume = 0.1;
+        audio.volume = 0.2;
 
         // Обработка клика на экран входа
         entranceScreen.addEventListener('click', () => {
-            // Скрываем экран входа
             entranceScreen.classList.add('hide');
             
-            // Запускаем музыку
             audio.play().then(() => {
                 playBtn.classList.add('playing');
             }).catch(err => {
                 console.log('Autoplay error:', err);
             });
             
-            // Удаляем экран входа через 0.8s (после анимации)
             setTimeout(() => {
                 entranceScreen.remove();
             }, 800);
@@ -558,12 +633,12 @@
         // Генерация чёрных частиц - НЕПРЕРЫВНЫЙ ПОТОК
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
-            const particleCount = 100; // Ещё больше частиц
+            const particleCount = 50;
 
             for (let i = 0; i < particleCount; i++) {
                 setTimeout(() => {
                     createOneParticle();
-                }, i * 200); // Минимальная задержка между частицами (20ms)
+                }, i * 20);
             }
         }
 
@@ -572,11 +647,11 @@
             const particle = document.createElement('div');
             particle.className = 'particle';
             
-            const size = Math.random() * 8 + 5; // 5-13px
+            const size = Math.random() * 8 + 5;
             const startX = Math.random() * 100;
             const xMove = (Math.random() - 0.5) * 250;
-            const duration = Math.random() * 8 + 15; // 15-23s (сократили для быстрого цикла)
-            const delay = Math.random() * 2; // Сократили задержку до 0-2s
+            const duration = Math.random() * 8 + 15;
+            const delay = Math.random() * 2;
             
             particle.style.width = size + 'px';
             particle.style.height = size + 'px';
@@ -588,14 +663,12 @@
             
             particlesContainer.appendChild(particle);
             
-            // Автоматически пересоздаём частицу после завершения анимации
             setTimeout(() => {
                 particle.remove();
-                createOneParticle(); // Мгновенное пересоздание без задержки
+                createOneParticle();
             }, (duration + delay) * 1000);
         }
 
-        // Запуск генерации частиц
         window.addEventListener('load', () => {
             createParticles();
         });
