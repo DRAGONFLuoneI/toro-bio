@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ToRo - Bio</title>
+    <link rel="shortcut icon" href="./media/img/icon_index.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
@@ -21,72 +22,13 @@
             background: #000;
         }
 
-        /* Кастомный курсор - православный крест */
         .custom-cursor {
             position: fixed;
             pointer-events: none;
             z-index: 99999;
-            mix-blend-mode: difference;
-            transition: transform 0.1s ease;
+            transform: translate(-50%, -50%); /* Центрируем иконку */
+            transition: transform 0.05s ease;
         }
-
-        .orthodox-cross {
-            width: 30px;
-            height: 40px;
-            position: relative;
-            transform: translate(-50%, -50%);
-        }
-
-        /* Вертикальная линия */
-        .orthodox-cross::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0;
-            transform: translateX(-50%);
-            width: 3px;
-            height: 100%;
-            background: #000;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-        }
-
-        /* Верхняя горизонтальная линия */
-        .orthodox-cross::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 8px;
-            transform: translateX(-50%);
-            width: 18px;
-            height: 3px;
-            background: #000;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-        }
-
-        /* Средняя горизонтальная линия */
-        .cross-middle {
-            position: absolute;
-            left: 50%;
-            top: 18px;
-            transform: translateX(-50%);
-            width: 24px;
-            height: 3px;
-            background: #000;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-        }
-
-        /* Нижняя диагональная линия */
-        .cross-bottom {
-            position: absolute;
-            left: 50%;
-            bottom: 6px;
-            transform: translateX(-50%) rotate(-20deg);
-            width: 20px;
-            height: 3px;
-            background: #000;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-        }
-
         /* Экран входа с размытием */
         .entrance-screen {
             position: fixed;
@@ -466,12 +408,7 @@
 </head>
 <body>
     <!-- Кастомный курсор - православный крест -->
-    <div class="custom-cursor">
-        <div class="orthodox-cross">
-            <div class="cross-middle"></div>
-            <div class="cross-bottom"></div>
-        </div>
-    </div>
+    <div class="custom-cursor"></div>
 
     <!-- Экран входа с размытием -->
     <div class="entrance-screen" id="entranceScreen">
@@ -506,7 +443,7 @@
         <div class="location">Russia</div>
 
         <!-- Иконка глобуса с ссылкой -->
-        <a href="https://your-website.com" target="_blank" class="globe-link">
+        <a href="https://steamcommunity.com/profiles/76561199388669143/" target="_blank" class="globe-link">
             <svg class="globe-icon" viewBox="0 0 24 24">
                 <defs>
                     <mask id="globe-mask">
@@ -543,12 +480,30 @@
     <audio id="audio" src="./media/audio/iebanytiu.mp3"></audio>
 
     <script>
-        // Кастомный курсор
+        // Кастомный курсор - вставь свою иконку
         const cursor = document.querySelector('.custom-cursor');
-        
+
+        // НАСТРОЙКИ - ИЗМЕНИ ЗДЕСЬ:
+        const cursorSettings = {
+            image: './media/img/custom-cursor.png',  // ← ПУТЬ К ТВОЕЙ ИКОНКЕ
+            width: 32,                         // ← ШИРИНА в пикселях
+            height: 32,                        // ← ВЫСОТА в пикселях
+            offsetX: 0,                        // ← Смещение по X (центрирование)
+            offsetY: 0                         // ← Смещение по Y (центрирование)
+        };
+
+        // Применяем иконку
+        cursor.style.width = cursorSettings.width + 'px';
+        cursor.style.height = cursorSettings.height + 'px';
+        cursor.style.backgroundImage = `url('${cursorSettings.image}')`;
+        cursor.style.backgroundSize = 'contain';
+        cursor.style.backgroundRepeat = 'no-repeat';
+        cursor.style.backgroundPosition = 'center';
+
+        // Следование за мышью
         document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+            cursor.style.left = (e.clientX + cursorSettings.offsetX) + 'px';
+            cursor.style.top = (e.clientY + cursorSettings.offsetY) + 'px';
         });
 
         // Элементы
@@ -560,7 +515,7 @@
         const durationEl = document.getElementById('duration');
         const entranceScreen = document.getElementById('entranceScreen');
 
-        audio.volume = 0.2;
+        audio.volume = 0.1;
 
         // Обработка клика на экран входа
         entranceScreen.addEventListener('click', () => {
@@ -633,12 +588,12 @@
         // Генерация чёрных частиц - НЕПРЕРЫВНЫЙ ПОТОК
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
-            const particleCount = 50;
+            const particleCount = 100;
 
             for (let i = 0; i < particleCount; i++) {
                 setTimeout(() => {
                     createOneParticle();
-                }, i * 20);
+                }, i * 200);
             }
         }
 
