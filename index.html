@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToRo - Bio</title>
+    <link rel="shortcut icon" href="./media/img/icon_index.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Dela Gothic One', cursive;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Экран входа с размытием */
+        .entrance-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.8s ease, backdrop-filter 0.8s ease;
+        }
+
+        .entrance-screen.hide {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            pointer-events: none;
+        }
+
+        .entrance-text {
+            font-family: 'Dela Gothic One', cursive;
+            font-size: 32px;
+            color: white;
+            text-align: center;
+            letter-spacing: 2px;
+            animation: pulse 2s ease-in-out infinite;
+            user-select: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Фоновое видео с затемнением */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            z-index: -2;
+            object-fit: cover;
+            filter: brightness(0.85);
+        }
+
+        /* Overlay для дополнительного затемнения */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.15);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Чёрные частицы - УВЕЛИЧЕНЫ */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: #000;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float-up linear infinite;
+            opacity: 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(0) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.9;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-110vh) translateX(var(--x-move)) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Основной контейнер */
+        .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            text-align: center;
+        }
+
+        /* Анимация появления для всех элементов */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container > * {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        /* Задержки для каскадного появления */
+        .avatar { animation-delay: 0.1s; }
+        .title { animation-delay: 0.2s; }
+        .subtitle { animation-delay: 0.3s; }
+        .location { animation-delay: 0.4s; }
+        .globe-link { animation-delay: 0.5s; }
+        .description { animation-delay: 0.6s; }
+        .audio-player { animation-delay: 0.7s; }
+
+        /* Аватар */
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Заголовок ToRo с простой анимацией */
+        .title {
+            font-size: 80px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            animation: fadeGlow 2s ease-in-out infinite alternate, fadeInUp 0.8s ease-out forwards;
+            animation-delay: 0s, 0.2s;
+        }
+
+        @keyframes fadeGlow {
+            from {
+                opacity: 0.9;
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            }
+            to {
+                opacity: 1;
+                text-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        /* Подзаголовок */
+        .subtitle {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 400;
+            opacity: 0;
+        }
+
+        /* Локация */
+        .location {
+            font-size: 16px;
+            margin-bottom: 40px;
+            opacity: 0;
+        }
+
+        .location:before {
+            content: "<3";
+            margin-right: 5px;
+        }
+
+        /* Иконка глобуса - с hover и кликом */
+        .globe-link {
+            display: inline-block;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 15px;
+            opacity: 0;
+        }
+
+        .globe-icon {
+            width: 60px;
+            height: 60px;
+            filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 15px rgba(0, 0, 0, 0.4));
+            transition: all 0.3s ease;
+        }
+
+        .globe-link:hover .globe-icon {
+            transform: scale(1.15) rotate(15deg);
+            filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.6));
+        }
+
+        .globe-link:active .globe-icon {
+            transform: scale(1.05) rotate(0deg);
+        }
+
+        /* Описание с красным сиянием */
+        .description {
+            font-size: 14px;
+            color: #ff3333;
+            margin-bottom: 60px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 4px #520000;
+            opacity: 0;
+        }
+
+        /* Аудиоплеер - ИДЕАЛЬНЫЙ */
+        .audio-player {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 500px;
+            padding: 0;
+            opacity: 0;
+        }
+
+        /* Кнопка play - прозрачная, только иконка */
+        .play-btn {
+            top: -10px;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 24px;
+            flex-shrink: 0;
+            padding: 0;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        .play-btn:hover {
+            opacity: 1;
+            transform: scale(1.15);
+        }
+
+        /* Треугольник play */
+        .play-btn::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 14px solid white;
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            margin-left: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn.playing::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            border-left: 4px solid white;
+            border-right: 4px solid white;
+            border-top: 0;
+            border-bottom: 0;
+            margin-left: 0;
+            box-sizing: content-box;
+        }
+
+        .progress-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        /* Прогресс-бар - идеально выровнен */
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 1.5px;
+            overflow: visible;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background: white;
+            width: 0%;
+            transition: width 0.1s linear;
+            border-radius: 1.5px;
+            position: relative;
+        }
+
+        /* Точка на прогресс-баре */
+        .progress::after {
+            content: '';
+            position: absolute;
+            right: -1px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .progress-bar:hover .progress::after {
+            opacity: 1;
+        }
+
+        /* Время - идеально выровнено */
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.5px;
+            line-height: 1;
+        }
+
+        /* Адаптив */
+        @media (max-width: 768px) {
+            .entrance-text {
+                font-size: 24px;
+                padding: 0 20px;
+            }
+            .title {
+                font-size: 60px;
+            }
+            .audio-player {
+                width: 90%;
+                max-width: 400px;
+                gap: 15px;
+            }
+            .play-btn {
+                width: 35px;
+                height: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Экран входа с размытием -->
+    <div class="entrance-screen" id="entranceScreen">
+        <div class="entrance-text">Click anywhere on the screen</div>
+    </div>
+
+    <!-- Фоновое видео -->
+    <video id="bg-video" autoplay muted loop playsinline>
+        <source src="./media/vidio/battlefield-sekiro.mp4" type="video/mp4">
+    </video>
+    
+    <!-- Overlay затемнения -->
+    <div class="video-overlay"></div>
+
+    <!-- Чёрные частицы -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Основной контент -->
+    <div class="container">
+        <!-- Аватар -->
+        <div class="avatar">
+            <img src="./media/img/avatar.jpg" alt="ToRo" onerror="this.parentElement.style.background='linear-gradient(135deg, #2a2a2a, #1a1a1a)'">
+        </div>
+
+        <!-- Заголовок с эффектом -->
+        <h1 class="title">ToRo</h1>
+
+        <!-- Подзаголовок -->
+        <h2 class="subtitle">Name - ToRo</h2>
+
+        <!-- Локация -->
+        <div class="location">Russia</div>
+
+        <!-- Иконка глобуса с ссылкой -->
+        <a href="https://steamcommunity.com/profiles/76561199388669143/" target="_blank" class="globe-link">
+            <svg class="globe-icon" viewBox="0 0 24 24">
+                <defs>
+                    <mask id="globe-mask">
+                        <circle cx="12" cy="12" r="10" fill="white"/>
+                        <line x1="2" y1="12" x2="22" y2="12" stroke="black" stroke-width="2"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" 
+                              fill="none" stroke="black" stroke-width="2"/>
+                    </mask>
+                </defs>
+                <circle cx="12" cy="12" r="10" fill="black" mask="url(#globe-mask)"/>
+            </svg>
+        </a>
+
+        <!-- Описание с красным сиянием -->
+        <div class="description">I am invincible</div>
+
+        <!-- Аудиоплеер -->
+        <div class="audio-player">
+            <button class="play-btn" id="playBtn" aria-label="Play"></button>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="time-info">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрытый аудио элемент -->
+    <audio id="audio" src="./media/audio/iebanytiu.mp3"></audio>
+
+    <script>
+        // Элементы
+        const audio = document.getElementById('audio');
+        const playBtn = document.getElementById('playBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const entranceScreen = document.getElementById('entranceScreen');
+
+        audio.volume = 0.1;
+
+        // Обработка клика на экран входа
+        entranceScreen.addEventListener('click', () => {
+            // Скрываем экран входа
+            entranceScreen.classList.add('hide');
+            
+            // Запускаем музыку
+            audio.play().then(() => {
+                playBtn.classList.add('playing');
+            }).catch(err => {
+                console.log('Autoplay error:', err);
+            });
+            
+            // Удаляем экран входа через 0.8s (после анимации)
+            setTimeout(() => {
+                entranceScreen.remove();
+            }, 800);
+        });
+
+        // Аудиоплеер функционал
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.classList.add('playing');
+            } else {
+                audio.pause();
+                playBtn.classList.remove('playing');
+            }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const progressPercent = (audio.currentTime / audio.duration) * 100;
+                progress.style.width = progressPercent + '%';
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+            playBtn.classList.remove('playing');
+            progress.style.width = '0%';
+        });
+
+        progressBar.addEventListener('click', (e) => {
+            if (audio.duration) {
+                const rect = progressBar.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = percent * audio.duration;
+            }
+        });
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds === 0) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        window.addEventListener('load', () => {
+            const video = document.getElementById('bg-video');
+            video.play().catch(e => console.log('Autoplay blocked'));
+        });
+
+        audio.addEventListener('error', () => {
+            console.log('Audio file not found');
+            durationEl.textContent = '0:00';
+        });
+
+        // Генерация чёрных частиц - НЕПРЕРЫВНЫЙ ПОТОК
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 100; // Ещё больше частиц
+
+            for (let i = 0; i < particleCount; i++) {
+                setTimeout(() => {
+                    createOneParticle();
+                }, i * 200); // Минимальная задержка между частицами (20ms)
+            }
+        }
+
+        function createOneParticle() {
+            const particlesContainer = document.getElementById('particles');
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const size = Math.random() * 8 + 5; // 5-13px
+            const startX = Math.random() * 100;
+            const xMove = (Math.random() - 0.5) * 250;
+            const duration = Math.random() * 8 + 15; // 15-23s (сократили для быстрого цикла)
+            const delay = Math.random() * 2; // Сократили задержку до 0-2s
+            
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = startX + '%';
+            particle.style.bottom = '-10px';
+            particle.style.setProperty('--x-move', xMove + 'px');
+            particle.style.animationDuration = duration + 's';
+            particle.style.animationDelay = delay + 's';
+            
+            particlesContainer.appendChild(particle);
+            
+            // Автоматически пересоздаём частицу после завершения анимации
+            setTimeout(() => {
+                particle.remove();
+                createOneParticle(); // Мгновенное пересоздание без задержки
+            }, (duration + delay) * 1000);
+        }
+
+        // Запуск генерации частиц
+        window.addEventListener('load', () => {
+            createParticles();
+        });
+    </script>
+</body>
+</html>
