@@ -9,6 +9,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
     <style>
+     /* Счётчик просмотров */
+        .view-counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'Arial', sans-serif;
+            margin-bottom: 15px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+            animation-delay: 0.8s;
+        }
+        
+        .counter-icon {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+        }
+        
+        #viewCount {
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -499,7 +524,13 @@
 
         <!-- Описание с красным сиянием -->
         <div class="description">I am invincible</div>
-
+        <!-- Счётчик просмотров -->
+        <div class="view-counter">
+            <svg class="counter-icon" viewBox="0 0 24 24" fill="white">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>
+            <span id="viewCount">0</span> views
+        </div>
         <!-- Аудиоплеер -->
         <div class="audio-player">
             <button class="play-btn" id="playBtn" aria-label="Play"></button>
@@ -667,8 +698,81 @@
         window.addEventListener('load', () => {
             createParticles();
         });
+                // Счётчик просмотров через CountAPI (защита по IP)
+        async function initViewCounter() {
+            const viewCountEl = document.getElementById('viewCount');
+            const namespace = 'toro-bio'; // Твой уникальный namespace
+            const key = 'page-views';
+            const apiUrl = `https://api.countapi.xyz/hit/${namespace}/${key}`;
+            
+            try {
+                // Проверяем куки, чтобы не считать повторные просмотры
+                const hasVisited = getCookie('toro_visited');
+                
+                if (!hasVisited) {
+                    // Увеличиваем счётчик
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+                    
+                    // Устанавливаем куку на 24 часа
+                    setCookie('toro_visited', 'true', 1);
+                    
+                    // Анимация счётчика
+                    animateCounter(viewCountEl, data.value);
+                } else {
+                    // Просто получаем текущее значение
+                    const getUrl = `https://api.countapi.xyz/get/${namespace}/${key}`;
+                    const response = await fetch(getUrl);
+                    const data = await response.json();
+                    animateCounter(viewCountEl, data.value);
+                }
+            } catch (error) {
+                console.error('Counter error:', error);
+                viewCountEl.textContent = '---';
+            }
+        }
+        
+        // Функции для работы с куками
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        // Анимация подсчёта
+        function animateCounter(element, targetValue) {
+            let currentValue = 0;
+            const duration = 1500;
+            const increment = targetValue / (duration / 16);
+            
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= targetValue) {
+                    currentValue = targetValue;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(currentValue).toLocaleString();
+            }, 16);
+        }
+        
+        // Запуск
+        window.addEventListener('load', () => {
+            initViewCounter();
+        });
     </script>
 </body>
 </html>
+
 
 
