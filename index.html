@@ -698,67 +698,62 @@
         window.addEventListener('load', () => {
             createParticles();
         });
-        // САМЫЙ НАДЁЖНЫЙ вариант для GitHub Pages
+        // Счётчик через localStorage с защитой от накрутки
         function initViewCounter() {
             const viewCountEl = document.getElementById('viewCount');
+            const STORAGE_KEY = 'toro_total_views';
+            const USER_KEY = 'toro_user_session';
+            const IP_HASH_KEY = 'toro_user_hash';
             
-            // Ключи
-            const VIEWS_KEY = 'toro_views_v2';
-            const FINGERPRINT_KEY = 'toro_fp_v2';
-            
-            // Создаём отпечаток браузера
-            const getFingerprint = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                ctx.textBaseline = 'top';
-                ctx.font = '14px Arial';
-                ctx.fillText('ToRo', 2, 2);
-                
-                return canvas.toDataURL() + 
-                       navigator.userAgent + 
-                       screen.width + 
-                       screen.height + 
-                       navigator.language;
+            // Генерируем уникальный хеш пользователя (на основе браузера)
+            const getUserHash = () => {
+                const nav = navigator;
+                const screen = window.screen;
+                const guid = nav.mimeTypes.length + nav.userAgent.replace(/\D+/g, '') + 
+                             nav.plugins.length + screen.height + screen.width + screen.pixelDepth;
+                return btoa(guid).substring(0, 16);
             };
             
-            const fp = btoa(getFingerprint()).substring(0, 32);
-            const storedFp = localStorage.getItem(FINGERPRINT_KEY);
+            const userHash = getUserHash();
+            const storedHash = localStorage.getItem(IP_HASH_KEY);
             
-            // Получаем счётчик
-            let views = parseInt(localStorage.getItem(VIEWS_KEY)) || 0;
+            // Получаем общий счётчик
+            let totalViews = parseInt(localStorage.getItem(STORAGE_KEY)) || 0;
             
-            // Если новый пользователь
-            if (storedFp !== fp) {
-                views++;
-                localStorage.setItem(VIEWS_KEY, views);
-                localStorage.setItem(FINGERPRINT_KEY, fp);
+            // Если новый пользователь (по отпечатку браузера)
+            if (storedHash !== userHash) {
+                totalViews++;
+                localStorage.setItem(STORAGE_KEY, totalViews);
+                localStorage.setItem(IP_HASH_KEY, userHash);
+                localStorage.setItem(USER_KEY, Date.now());
             }
             
             // Анимация
-            animateCounter(viewCountEl, views);
+            animateCounter(viewCountEl, totalViews);
         }
         
         function animateCounter(element, targetValue) {
-            let current = 0;
+            let currentValue = 0;
             const duration = 1500;
             const steps = 60;
             const increment = targetValue / steps;
             
-            const interval = setInterval(() => {
-                current += increment;
-                if (current >= targetValue) {
-                    current = targetValue;
-                    clearInterval(interval);
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= targetValue) {
+                    currentValue = targetValue;
+                    clearInterval(timer);
                 }
-                element.textContent = Math.floor(current).toLocaleString();
+                element.textContent = Math.floor(currentValue).toLocaleString();
             }, duration / steps);
         }
         
         // Запуск
-        document.addEventListener('DOMContentLoaded', initViewCounter);
+        window.addEventListener('load', initViewCounter);
     </script>
 </body>
 </html>
+
 
 
 
