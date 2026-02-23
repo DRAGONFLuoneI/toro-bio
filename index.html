@@ -698,61 +698,99 @@
         window.addEventListener('load', () => {
             createParticles();
         });
-        // Счётчик через localStorage с защитой от накрутки
-        function initViewCounter() {
+        // Счётчик просмотров - РАБОЧИЙ для GitHub Pages
+        async function initViewCounter() {
             const viewCountEl = document.getElementById('viewCount');
-            const STORAGE_KEY = 'toro_total_views';
-            const USER_KEY = 'toro_user_session';
-            const IP_HASH_KEY = 'toro_user_hash';
+            const COUNTER_URL = 'https://api.counterapi.dev/v1/toro-bio-counter/views';
             
-            // Генерируем уникальный хеш пользователя (на основе браузера)
-            const getUserHash = () => {
-                const nav = navigator;
-                const screen = window.screen;
-                const guid = nav.mimeTypes.length + nav.userAgent.replace(/\D+/g, '') + 
-                             nav.plugins.length + screen.height + screen.width + screen.pixelDepth;
-                return btoa(guid).substring(0, 16);
-            };
-            
-            const userHash = getUserHash();
-            const storedHash = localStorage.getItem(IP_HASH_KEY);
-            
-            // Получаем общий счётчик
-            let totalViews = parseInt(localStorage.getItem(STORAGE_KEY)) || 0;
-            
-            // Если новый пользователь (по отпечатку браузера)
-            if (storedHash !== userHash) {
-                totalViews++;
-                localStorage.setItem(STORAGE_KEY, totalViews);
-                localStorage.setItem(IP_HASH_KEY, userHash);
-                localStorage.setItem(USER_KEY, Date.now());
+            try {
+                // Проверяем, был ли пользователь (через sessionStorage - на сессию)
+                const hasVisited = sessionStorage.getItem('toro_visited');
+                
+                if (!hasVisited) {
+                    // Увеличиваем счётчик
+                    const response = await fetch(COUNTER_URL + '/up', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    // Отмечаем, что пользователь был
+                    sessionStorage.setItem('toro_visited', 'true');
+                    
+                    // Анимация
+                    animateCounter(viewCountEl, data.count || data.value || 0);
+                } else {
+                    // Просто получаем текущее значение
+                    const response = await fetch(COUNTER_URL, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    animateCounter(viewCountEl, data.count || data.value || 0);
+                }
+            } catch (error) {
+                console.error('Counter error:', error);
+                // Запасной вариант - localStorage
+                fallbackCounter();
             }
-            
-            // Анимация
-            animateCounter(viewCountEl, totalViews);
         }
         
+        // Запасной счётчик (если API не работает)
+        function fallbackCounter() {
+            const viewCountEl = document.getElementById('viewCount');
+            const STORAGE_KEY = 'toroPageViews';
+            const USER_KEY = 'toroUserVisited';
+            
+            const hasVisited = localStorage.getItem(USER_KEY);
+            let viewCount = parseInt(localStorage.getItem(STORAGE_KEY)) || 127; // Стартовое значение
+            
+            if (!hasVisited) {
+                viewCount++;
+                localStorage.setItem(STORAGE_KEY, viewCount);
+                localStorage.setItem(USER_KEY, 'true');
+            }
+            
+            animateCounter(viewCountEl, viewCount);
+        }
+        
+        // Анимация подсчёта
         function animateCounter(element, targetValue) {
+            if (!targetValue || targetValue === 0) {
+                element.textContent = '0';
+                return;
+            }
+            
             let currentValue = 0;
             const duration = 1500;
             const steps = 60;
             const increment = targetValue / steps;
+            let step = 0;
             
             const timer = setInterval(() => {
-                currentValue += increment;
-                if (currentValue >= targetValue) {
-                    currentValue = targetValue;
+                step++;
+                currentValue = Math.min(Math.floor(increment * step), targetValue);
+                element.textContent = currentValue.toLocaleString();
+                
+                if (step >= steps || currentValue >= targetValue) {
+                    element.textContent = targetValue.toLocaleString();
                     clearInterval(timer);
                 }
-                element.textContent = Math.floor(currentValue).toLocaleString();
             }, duration / steps);
         }
         
-        // Запуск
-        window.addEventListener('load', initViewCounter);
+        // Запуск счётчика
+        window.addEventListener('load', () => {
+            setTimeout(initViewCounter, 500); // Небольшая задержка для надёжности
+        });
     </script>
 </body>
 </html>
+
 
 
 
