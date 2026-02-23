@@ -698,81 +698,68 @@
         window.addEventListener('load', () => {
             createParticles();
         });
-                // Счётчик просмотров через CountAPI (защита по IP)
-        async function initViewCounter() {
+        // САМЫЙ НАДЁЖНЫЙ вариант для GitHub Pages
+        function initViewCounter() {
             const viewCountEl = document.getElementById('viewCount');
-            const namespace = 'toro-bio'; // Твой уникальный namespace
-            const key = 'page-views';
-            const apiUrl = `https://api.countapi.xyz/hit/${namespace}/${key}`;
             
-            try {
-                // Проверяем куки, чтобы не считать повторные просмотры
-                const hasVisited = getCookie('toro_visited');
+            // Ключи
+            const VIEWS_KEY = 'toro_views_v2';
+            const FINGERPRINT_KEY = 'toro_fp_v2';
+            
+            // Создаём отпечаток браузера
+            const getFingerprint = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('ToRo', 2, 2);
                 
-                if (!hasVisited) {
-                    // Увеличиваем счётчик
-                    const response = await fetch(apiUrl);
-                    const data = await response.json();
-                    
-                    // Устанавливаем куку на 24 часа
-                    setCookie('toro_visited', 'true', 1);
-                    
-                    // Анимация счётчика
-                    animateCounter(viewCountEl, data.value);
-                } else {
-                    // Просто получаем текущее значение
-                    const getUrl = `https://api.countapi.xyz/get/${namespace}/${key}`;
-                    const response = await fetch(getUrl);
-                    const data = await response.json();
-                    animateCounter(viewCountEl, data.value);
-                }
-            } catch (error) {
-                console.error('Counter error:', error);
-                viewCountEl.textContent = '---';
-            }
-        }
-        
-        // Функции для работы с куками
-        function setCookie(name, value, days) {
-            const expires = new Date();
-            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-        }
-        
-        function getCookie(name) {
-            const nameEQ = name + "=";
-            const ca = document.cookie.split(';');
-            for(let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-            }
-            return null;
-        }
-        
-        // Анимация подсчёта
-        function animateCounter(element, targetValue) {
-            let currentValue = 0;
-            const duration = 1500;
-            const increment = targetValue / (duration / 16);
+                return canvas.toDataURL() + 
+                       navigator.userAgent + 
+                       screen.width + 
+                       screen.height + 
+                       navigator.language;
+            };
             
-            const timer = setInterval(() => {
-                currentValue += increment;
-                if (currentValue >= targetValue) {
-                    currentValue = targetValue;
-                    clearInterval(timer);
+            const fp = btoa(getFingerprint()).substring(0, 32);
+            const storedFp = localStorage.getItem(FINGERPRINT_KEY);
+            
+            // Получаем счётчик
+            let views = parseInt(localStorage.getItem(VIEWS_KEY)) || 0;
+            
+            // Если новый пользователь
+            if (storedFp !== fp) {
+                views++;
+                localStorage.setItem(VIEWS_KEY, views);
+                localStorage.setItem(FINGERPRINT_KEY, fp);
+            }
+            
+            // Анимация
+            animateCounter(viewCountEl, views);
+        }
+        
+        function animateCounter(element, targetValue) {
+            let current = 0;
+            const duration = 1500;
+            const steps = 60;
+            const increment = targetValue / steps;
+            
+            const interval = setInterval(() => {
+                current += increment;
+                if (current >= targetValue) {
+                    current = targetValue;
+                    clearInterval(interval);
                 }
-                element.textContent = Math.floor(currentValue).toLocaleString();
-            }, 16);
+                element.textContent = Math.floor(current).toLocaleString();
+            }, duration / steps);
         }
         
         // Запуск
-        window.addEventListener('load', () => {
-            initViewCounter();
-        });
+        document.addEventListener('DOMContentLoaded', initViewCounter);
     </script>
 </body>
 </html>
+
 
 
 
